@@ -1,0 +1,4 @@
+# 运行日志（每次启动自动重新生成）
+dsh-server.log
+dsh-server.err.log
+launcher-debug.log
