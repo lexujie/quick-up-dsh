@@ -2,3 +2,9 @@
 dsh-server.log
 dsh-server.err.log
 launcher-debug.log
+smoketest-out.log
+selftest-out.log
+selftest-err.log
+
+# 启动器运行时配置（删除即恢复默认）
+launcher-config.json

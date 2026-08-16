@@ -26,6 +26,7 @@ param(
     [switch]$SmokeTest,
     [switch]$SelfTest,
     [switch]$NoBrowser,
+    [switch]$Lan,
     [int]$Port = 3080
 )
 
@@ -37,6 +38,7 @@ $ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $OutLog = Join-Path $ScriptDir 'dsh-server.log'
 $ErrLog = Join-Path $ScriptDir 'dsh-server.err.log'
 $DebugLog = Join-Path $ScriptDir 'launcher-debug.log'
+$LanPatch = Join-Path $ScriptDir 'lan.patch.yml'
 $StartTimeoutSec = 180
 
 function Write-DebugLog([string]$msg) {
@@ -96,13 +98,17 @@ function Resolve-DshEntry {
 }
 
 function Get-DshCommandLine($node, $entry) {
-    $portArg = '--port ' + $Port
+    $cmdArgs = if ($Lan) {
+        '--patch "' + $LanPatch + '" --port ' + $Port
+    } else {
+        '--port ' + $Port
+    }
     switch ($entry.Kind) {
-        'node' { return ('"{0}" "{1}" web {2}' -f $node, $entry.Path, $portArg) }
-        'ps1'  { return ('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{0}" web {1}' -f $entry.Path, $portArg) }
-        'cmd'  { return ('"{0}" web {1}' -f $entry.Path, $portArg) }
-        'npx'  { return ('npx --no-install @deepseek-ai/dsh web {0}' -f $portArg) }
-        default { return ('"{0}" "{1}" web {2}' -f $node, $entry.Path, $portArg) }
+        'node' { return ('"{0}" "{1}" web {2}' -f $node, $entry.Path, $cmdArgs) }
+        'ps1'  { return ('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{0}" web {1}' -f $entry.Path, $cmdArgs) }
+        'cmd'  { return ('"{0}" web {1}' -f $entry.Path, $cmdArgs) }
+        'npx'  { return ('npx --no-install @deepseek-ai/dsh web {0}' -f $cmdArgs) }
+        default { return ('"{0}" "{1}" web {2}' -f $node, $entry.Path, $cmdArgs) }
     }
 }
 
